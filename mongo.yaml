@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-deployment
+  labels:
+    app: mongo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      containers:
+      - name: mongodb
+        image: mongo:6.0.5
+        ports:
+          - containerPort: 27017
+        env:
+          - name: MONGO_INITDB_ROOT_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: mongo-secret
+                key: mongo-user
+          - name: MONGO_INITDB_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mongo-secret
+                key: mongo-password
+                
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-service
+spec:
+  selector:
+    app: mongo
+  ports:
+    - protocol: TCP
+      port: 27017
+      targetPort: 27017
+
+# Selector is needed to be added to let itself know that to which pods to be point to.
+
+# Lables are basically a name given to a pod or deployment.
+# Lables are important in PODs because they are given a unique name, so to identify the same pods on different replica, lables are used.
+# Labels are optional in deployments but a good practice
+
+# Deployments will know its PODS by using Matchlables in the specification. It should match the label of Pods.
+
+# Template in deployments are PODS
+# POD container where only one container is recommended to be ran
